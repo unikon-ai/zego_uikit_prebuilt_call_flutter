@@ -823,18 +823,12 @@ class ZegoCallInvitationPageManager {
       ZegoCallUser(
         _invitationData.inviter?.id ?? '',
         _invitationData.inviter?.name ?? '',
-        profilePicture: _invitationData.inviter?.profilePicture,
-        currentDesignation: _invitationData.inviter?.currentDesignation,
-        currentOrganization: _invitationData.inviter?.currentOrganization,
       ),
       _invitationData.type,
       _invitationData.invitees
           .map((user) => ZegoCallUser(
                 user.id,
                 user.name,
-                profilePicture: user.profilePicture,
-                currentDesignation: user.currentDesignation,
-                currentOrganization: user.currentOrganization,
               ))
           .toList(),
       _invitationData.customData,
@@ -871,9 +865,6 @@ class ZegoCallInvitationPageManager {
       ZegoCallUser(
         invitee.id,
         invitee.name,
-        profilePicture: invitee.profilePicture,
-        currentDesignation: invitee.currentDesignation,
-        currentOrganization: invitee.currentOrganization,
       ),
     );
 
@@ -902,9 +893,6 @@ class ZegoCallInvitationPageManager {
       ZegoCallUser(
         inviter.id,
         inviter.name,
-        profilePicture: inviter.profilePicture,
-        currentDesignation: inviter.currentDesignation,
-        currentOrganization: inviter.currentOrganization,
       ),
     );
 
@@ -995,9 +983,6 @@ class ZegoCallInvitationPageManager {
         ZegoCallUser(
           invitee.id,
           invitee.name,
-          profilePicture: invitee.profilePicture,
-          currentDesignation: invitee.currentDesignation,
-          currentOrganization: invitee.currentOrganization,
         ),
         rejectRequestData.customData,
       );
@@ -1008,9 +993,6 @@ class ZegoCallInvitationPageManager {
         ZegoCallUser(
           invitee.id,
           invitee.name,
-          profilePicture: invitee.profilePicture,
-          currentDesignation: invitee.currentDesignation,
-          currentOrganization: invitee.currentOrganization,
         ),
         rejectRequestData.customData,
       );
@@ -1059,9 +1041,6 @@ class ZegoCallInvitationPageManager {
       ZegoCallUser(
         inviter.id,
         inviter.name,
-        profilePicture: inviter.profilePicture,
-        currentDesignation: inviter.currentDesignation,
-        currentOrganization: inviter.currentOrganization,
       ),
       cancelRequestData.customData,
     );
