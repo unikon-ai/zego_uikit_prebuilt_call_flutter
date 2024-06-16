@@ -59,10 +59,26 @@ class ZegoCallInvitationData {
 class ZegoCallUser {
   String id;
   String name;
+  String? profilePicture;
+  String? currentDesignation;
+  String? currentOrganization;
 
-  ZegoCallUser(this.id, this.name);
+  ZegoCallUser(
+    this.id,
+    this.name, {
+    this.profilePicture,
+    this.currentDesignation,
+    this.currentOrganization,
+  });
 
-  ZegoCallUser.fromUIKit(ZegoUIKitUser user) : this(user.id, user.name);
+  ZegoCallUser.fromUIKit(ZegoUIKitUser user)
+      : this(
+          user.id,
+          user.name,
+          profilePicture: user.profilePicture,
+          currentDesignation: user.currentDesignation,
+          currentOrganization: user.currentOrganization,
+        );
 
   @override
   String toString() {
