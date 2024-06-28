@@ -48,7 +48,7 @@ class ZegoCallInvitationNotificationManager {
     if (isInit) {
       ZegoLoggerService.logInfo(
         'init already',
-        tag: 'call',
+        tag: 'call-invitation',
         subTag: 'notification manager',
       );
 
@@ -59,14 +59,14 @@ class ZegoCallInvitationNotificationManager {
 
     ZegoLoggerService.logInfo(
       'init',
-      tag: 'call',
+      tag: 'call-invitation',
       subTag: 'notification manager',
     );
 
     await requestPermission(Permission.notification).then((value) {
       ZegoLoggerService.logInfo(
         'request notification permission result:$value',
-        tag: 'call',
+        tag: 'call-invitation',
         subTag: 'notification manager',
       );
     });
@@ -105,7 +105,7 @@ class ZegoCallInvitationNotificationManager {
   Future<void> cancelAll() async {
     ZegoLoggerService.logInfo(
       'cancelAll',
-      tag: 'call',
+      tag: 'call-invitation',
       subTag: 'notification manager',
     );
 
@@ -116,7 +116,7 @@ class ZegoCallInvitationNotificationManager {
   void uninit() {
     ZegoLoggerService.logInfo(
       'uninit',
-      tag: 'call',
+      tag: 'call-invitation',
       subTag: 'notification manager',
     );
 
@@ -128,7 +128,7 @@ class ZegoCallInvitationNotificationManager {
     if (!isInit) {
       ZegoLoggerService.logWarn(
         'not init',
-        tag: 'call',
+        tag: 'call-invitation',
         subTag: 'notification manager',
       );
     }
@@ -149,7 +149,7 @@ class ZegoCallInvitationNotificationManager {
                   .notificationConfig.androidNotificationConfig?.vibrate ??
               true,
           title: invitationData.inviter?.name ?? 'unknown',
-          content: ZegoCallType.videoCall == invitationData.type
+          content: ZegoCallInvitationType.videoCall == invitationData.type
               ? ((invitationData.invitees.length > 1
                   ? callInvitationData
                       .innerText.incomingGroupVideoCallDialogMessage
@@ -167,7 +167,7 @@ class ZegoCallInvitationNotificationManager {
           acceptCallback: () async {
             ZegoLoggerService.logInfo(
               'LocalNotification, acceptCallback',
-              tag: 'call',
+              tag: 'call-invitation',
               subTag: 'notification manager',
             );
 
@@ -182,7 +182,7 @@ class ZegoCallInvitationNotificationManager {
           rejectCallback: () async {
             ZegoLoggerService.logInfo(
               'LocalNotification, rejectCallback',
-              tag: 'call',
+              tag: 'call-invitation',
               subTag: 'notification manager',
             );
 
@@ -195,7 +195,7 @@ class ZegoCallInvitationNotificationManager {
           cancelCallback: () {
             ZegoLoggerService.logInfo(
               'LocalNotification, cancelCallback',
-              tag: 'call',
+              tag: 'call-invitation',
               subTag: 'notification manager',
             );
 
@@ -206,7 +206,7 @@ class ZegoCallInvitationNotificationManager {
           clickCallback: () async {
             ZegoLoggerService.logInfo(
               'LocalNotification, clickCallback',
-              tag: 'call',
+              tag: 'call-invitation',
               subTag: 'notification manager',
             );
 
@@ -232,7 +232,7 @@ class ZegoCallInvitationNotificationManager {
       ZegoLoggerService.logInfo(
         "icon file, config name:${iconFileName ?? ""}, "
         'file name:$targetIconFileName, source:$iconSource',
-        tag: 'call',
+        tag: 'call-invitation',
         subTag: 'notification manager',
       );
     }
@@ -255,7 +255,7 @@ class ZegoCallInvitationNotificationManager {
       ZegoLoggerService.logInfo(
         "sound file, config name:${soundFileName ?? ""}, "
         'file name:$targetSoundFileName, source:$soundSource',
-        tag: 'call',
+        tag: 'call-invitation',
         subTag: 'notification manager',
       );
     }
