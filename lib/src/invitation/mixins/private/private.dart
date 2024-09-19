@@ -14,6 +14,8 @@ class ZegoCallInvitationServicePrivateImpl
         ZegoCallInvitationServiceIOSCallKitPrivatePrivate {
   bool _isInit = false;
 
+  ZegoCallInvitationServiceAPIImpl? invitationImpl;
+
   /// callkit
   bool _enableIOSVoIP = false;
 
@@ -30,7 +32,7 @@ class ZegoCallInvitationServicePrivateImpl
   ZegoCallInvitationNotificationManager? _notificationManager;
   ZegoCallPrebuiltPlugins? _plugins;
 
-  final invitingUsersNotifier = ValueNotifier<List<ZegoCallUser>>([]);
+  final localInvitingUsersNotifier = ValueNotifier<List<ZegoCallUser>>([]);
 
   ZegoCallInvitationData get currentCallInvitationData =>
       _pageManager?.invitationData ?? ZegoCallInvitationData.empty();
@@ -38,6 +40,10 @@ class ZegoCallInvitationServicePrivateImpl
   ZegoCallInvitationLocalParameter get localInvitationParameter =>
       _pageManager?.localInvitationParameter ??
       ZegoCallInvitationLocalParameter.empty();
+
+  bool get isAdvanceInvitationMode =>
+      (callInvitationConfig?.inCalling.canInvitingInCalling ?? false) ||
+      (callInvitationConfig?.missedCall.enableDialBack ?? false);
 
   ZegoCallInvitationConfig? get callInvitationConfig => _data?.config;
 
@@ -56,6 +62,7 @@ class ZegoCallInvitationServicePrivateImpl
   Future<void> _initPrivate({
     required int appID,
     required String appSign,
+    required String token,
     required String userID,
     required String userName,
     required List<IZegoUIKitPlugin> plugins,
@@ -67,6 +74,7 @@ class ZegoCallInvitationServicePrivateImpl
     ZegoCallInvitationInnerText? innerText,
     ZegoUIKitPrebuiltCallEvents? events,
     ZegoUIKitPrebuiltCallInvitationEvents? invitationEvents,
+    ZegoCallInvitationServiceAPIImpl? invitationImpl,
   }) async {
     ZegoLoggerService.logInfo(
       'init private, ',
@@ -84,9 +92,12 @@ class ZegoCallInvitationServicePrivateImpl
     innerText?.syncFrom(_defaultInnerText);
     ringtoneConfig?.syncFrom(_defaultRingtoneConfig);
 
+    this.invitationImpl = invitationImpl;
+
     _data = ZegoUIKitPrebuiltCallInvitationData(
       appID: appID,
       appSign: appSign,
+      token: token,
       userID: userID,
       userName: userName,
       plugins: plugins,
@@ -113,7 +124,7 @@ class ZegoCallInvitationServicePrivateImpl
     _notificationManager = ZegoCallInvitationNotificationManager(
       callInvitationData: _data!,
     );
-    await _notificationManager!.init();
+    await _notificationManager!.init(_data?.contextQuery?.call());
 
     _pageManager = ZegoCallInvitationPageManager(
       callInvitationData: _data!,
@@ -142,6 +153,8 @@ class ZegoCallInvitationServicePrivateImpl
         .adapterService()
         .unregisterMessageHandler(_onAppLifecycleStateChanged);
 
+    invitationImpl = null;
+
     _notificationManager?.uninit();
 
     _pageManager?.uninit();
@@ -152,6 +165,7 @@ class ZegoCallInvitationServicePrivateImpl
   Future<void> _initPlugins({
     required int appID,
     required String appSign,
+    required String token,
     required String userID,
     required String userName,
   }) async {
@@ -164,6 +178,7 @@ class ZegoCallInvitationServicePrivateImpl
     _plugins = ZegoCallPrebuiltPlugins(
       appID: _data!.appID,
       appSign: _data!.appSign,
+      token: _data!.token,
       userID: _data!.userID,
       userName: _data!.userName,
       plugins: _data!.plugins,
@@ -178,61 +193,105 @@ class ZegoCallInvitationServicePrivateImpl
         subTag: 'service private(${identityHashCode(this)}), init plugins',
       );
 
-      final androidChannelID =
-          _data!.notificationConfig.androidNotificationConfig?.channelID ??
-              defaultCallChannelKey;
-      final androidChannelName =
-          _data!.notificationConfig.androidNotificationConfig?.channelName ??
-              defaultCallChannelName;
+      var certificateIndex =
+          ZegoSignalingPluginMultiCertificate.firstCertificate;
+      if (Platform.isAndroid) {
+        certificateIndex = _data!.notificationConfig.androidNotificationConfig
+                ?.certificateIndex ??
+            ZegoSignalingPluginMultiCertificate.firstCertificate;
+      } else if (Platform.isIOS) {
+        certificateIndex =
+            _data!.notificationConfig.iOSNotificationConfig?.certificateIndex ??
+                ZegoSignalingPluginMultiCertificate.firstCertificate;
+      }
+
+      final androidChannelID = _data!.notificationConfig
+              .androidNotificationConfig?.callChannel.channelID ??
+          defaultCallChannelKey;
+      final androidChannelName = _data!.notificationConfig
+              .androidNotificationConfig?.callChannel.channelName ??
+          defaultCallChannelName;
       setPreferenceString(
         serializationKeyHandlerInfo,
         HandlerPrivateInfo(
           appID: appID.toString(),
+          token: token,
           userID: userID,
           userName: userName,
-          canInvitingInCalling: _data?.config.canInvitingInCalling ?? true,
+          canInvitingInCalling:
+              _data?.config.inCalling.canInvitingInCalling ?? true,
           isIOSSandboxEnvironment: _data!
               .notificationConfig.iOSNotificationConfig?.isSandboxEnvironment,
           enableIOSVoIP: _enableIOSVoIP,
-          certificateIndex: (_data!.notificationConfig.iOSNotificationConfig
-                      ?.certificateIndex ??
-                  ZegoSignalingPluginMultiCertificate.firstCertificate)
-              .id,
+          certificateIndex: certificateIndex.id,
           appName:
               _data!.notificationConfig.iOSNotificationConfig?.appName ?? '',
           androidCallChannelID: androidChannelID,
           androidCallChannelName: androidChannelName,
-          androidCallSound:
-              _data!.notificationConfig.androidNotificationConfig?.sound ?? '',
-          androidCallVibrate:
-              _data!.notificationConfig.androidNotificationConfig?.vibrate ??
-                  true,
+          androidCallSound: _data!.notificationConfig.androidNotificationConfig
+                  ?.callChannel.sound ??
+              '',
+          androidCallVibrate: _data!.notificationConfig
+                  .androidNotificationConfig?.callChannel.vibrate ??
+              true,
           androidMessageChannelID: _data!.notificationConfig
-                  .androidNotificationConfig?.messageChannelID ??
+                  .androidNotificationConfig?.messageChannel.channelID ??
               defaultMessageChannelID,
           androidMessageChannelName: _data!.notificationConfig
-                  .androidNotificationConfig?.messageChannelName ??
+                  .androidNotificationConfig?.messageChannel.channelName ??
               defaultMessageChannelName,
-          androidMessageIcon: _data!
-                  .notificationConfig.androidNotificationConfig?.messageIcon ??
+          androidMessageIcon: _data!.notificationConfig
+                  .androidNotificationConfig?.messageChannel.icon ??
               '',
-          androidMessageSound: _data!
-                  .notificationConfig.androidNotificationConfig?.messageSound ??
+          androidMessageSound: _data!.notificationConfig
+                  .androidNotificationConfig?.messageChannel.sound ??
               '',
           androidMessageVibrate: _data!.notificationConfig
-                  .androidNotificationConfig?.messageVibrate ??
+                  .androidNotificationConfig?.messageChannel.vibrate ??
               false,
+          androidMissedCallEnabled: _data!.config.missedCall.enabled,
+          androidMissedCallChannelID: _data!.notificationConfig
+                  .androidNotificationConfig?.missedCallChannel.channelID ??
+              defaultMissedCallChannelKey,
+          androidMissedCallChannelName: _data!.notificationConfig
+                  .androidNotificationConfig?.missedCallChannel.channelName ??
+              defaultMissedCallChannelName,
+          androidMissedCallIcon: _data!.notificationConfig
+                  .androidNotificationConfig?.missedCallChannel.icon ??
+              '',
+          androidMissedCallSound: _data!.notificationConfig
+                  .androidNotificationConfig?.missedCallChannel.sound ??
+              '',
+          androidMissedCallVibrate: _data!.notificationConfig
+                  .androidNotificationConfig?.missedCallChannel.vibrate ??
+              false,
+          missedCallNotificationTitle: ZegoUIKitPrebuiltCallInvitationService()
+              .private
+              .innerText
+              .missedCallNotificationTitle,
+          missedGroupVideoCallNotificationContent:
+              ZegoUIKitPrebuiltCallInvitationService()
+                  .private
+                  .innerText
+                  .missedGroupVideoCallNotificationContent,
+          missedGroupAudioCallNotificationContent:
+              ZegoUIKitPrebuiltCallInvitationService()
+                  .private
+                  .innerText
+                  .missedGroupAudioCallNotificationContent,
+          missedVideoCallNotificationContent:
+              ZegoUIKitPrebuiltCallInvitationService()
+                  .private
+                  .innerText
+                  .missedVideoCallNotificationContent,
+          missedAudioCallNotificationContent:
+              ZegoUIKitPrebuiltCallInvitationService()
+                  .private
+                  .innerText
+                  .missedAudioCallNotificationContent,
         ).toJsonString(),
       );
 
-      ZegoSignalingPluginMultiCertificate? certificateIndex;
-      if (Platform.isAndroid) {
-        certificateIndex = _data!
-            .notificationConfig.androidNotificationConfig?.certificateIndex;
-      } else if (Platform.isIOS) {
-        certificateIndex =
-            _data!.notificationConfig.iOSNotificationConfig?.certificateIndex;
-      }
       ZegoUIKit()
           .getSignalingPlugin()
           .enableNotifyWhenAppRunningInBackgroundOrQuit(
@@ -240,18 +299,16 @@ class ZegoCallInvitationServicePrivateImpl
             isIOSSandboxEnvironment: _data!
                 .notificationConfig.iOSNotificationConfig?.isSandboxEnvironment,
             enableIOSVoIP: _enableIOSVoIP,
-            certificateIndex: (certificateIndex ??
-                    ZegoSignalingPluginMultiCertificate.firstCertificate)
-                .id,
+            certificateIndex: certificateIndex.id,
             appName:
                 _data!.notificationConfig.iOSNotificationConfig?.appName ?? '',
             androidChannelID: androidChannelID,
             androidChannelName: androidChannelName,
             androidSound: (_data!.notificationConfig.androidNotificationConfig
-                        ?.sound?.isEmpty ??
+                        ?.callChannel.sound?.isEmpty ??
                     true)
                 ? ''
-                : '/raw/${_data!.notificationConfig.androidNotificationConfig?.sound}',
+                : '/raw/${_data!.notificationConfig.androidNotificationConfig?.callChannel.sound}',
           )
           .then((result) {
         if (_enableIOSVoIP) {
@@ -352,8 +409,10 @@ class ZegoCallInvitationServicePrivateImpl
     );
 
     ZegoUIKit().login(_data?.userID ?? '', _data?.userName ?? '');
-    await ZegoUIKit()
-        .init(appID: _data?.appID ?? 0, appSign: _data?.appSign ?? '');
+    await ZegoUIKit().init(
+      appID: _data?.appID ?? 0,
+      appSign: _data?.appSign ?? '',
+    );
 
     // enableCustomVideoProcessing
     if (ZegoPluginAdapter().getPlugin(ZegoUIKitPluginType.beauty) != null) {
@@ -364,20 +423,22 @@ class ZegoCallInvitationServicePrivateImpl
   }
 
   void _registerOfflineCallIsolateNameServer() {
-    // Here we need to clear the status of background isolate and subscription.
-    // The problem occurs when an offline call is received, but the user
-    // directly clicks the appIcon to open the application. mainIsolate will create the zim,
-    // and fcmIsolate will accidentally destroy the zim.
-    ZegoLoggerService.logInfo(
-      'Cancel The flutterCallkitIncomingStreamSubscription or not:'
-      '(${flutterCallkitIncomingStreamSubscription?.hashCode})',
-      tag: 'call-invitation',
-      subTag: 'service private(${identityHashCode(this)})',
-    );
     if (flutterCallkitIncomingStreamSubscription != null) {
+      /// Here we need to clear the status of background isolate and subscription.
+      /// The problem occurs when an offline call is received, but the user
+      /// directly clicks the appIcon to open the application. mainIsolate will create the zim,
+      /// and fcmIsolate will accidentally destroy the zim.
+      ZegoLoggerService.logInfo(
+        'cancel The flutterCallkitIncomingStreamSubscription or not:'
+        '(${flutterCallkitIncomingStreamSubscription?.hashCode})',
+        tag: 'call-invitation',
+        subTag: 'service private(${identityHashCode(this)}), isolate',
+      );
+
       flutterCallkitIncomingStreamSubscription?.cancel();
       flutterCallkitIncomingStreamSubscription = null;
     }
+
     final lookupIsolate =
         IsolateNameServer.lookupPortByName(backgroundMessageIsolatePortName);
     final isMainIsolatePort =
@@ -387,15 +448,14 @@ class ZegoCallInvitationServicePrivateImpl
       'Close The lookupIsolate or not, needClose:$needClose, '
       'hash(${lookupIsolate?.hashCode}), isMainIsolatePort:$isMainIsolatePort',
       tag: 'call-invitation',
-      subTag: 'service private(${identityHashCode(this)})',
+      subTag: 'service private(${identityHashCode(this)}), isolate',
     );
     if (needClose) {
-      lookupIsolate.send('close');
+      lookupIsolate.send(backgroundMessageIsolateCloseCommand);
     }
 
     // register MainIsolatePort
     _backgroundPort = ReceivePort();
-
     IsolateNameServer.registerPortWithName(
       _backgroundPort!.sendPort,
       backgroundMessageIsolatePortName,
@@ -406,6 +466,13 @@ class ZegoCallInvitationServicePrivateImpl
       tag: 'call-invitation',
       subTag: 'service private(${identityHashCode(this)}), isolate',
     );
+
+    WidgetsFlutterBinding.ensureInitialized();
+    WidgetsBinding.instance.addObserver(ZegoCallIsolateNameServerGuard(
+      backgroundPort: _backgroundPort!,
+      portName: backgroundMessageIsolatePortName,
+    ));
+
     _backgroundPort!.listen((dynamic message) async {
       ZegoLoggerService.logInfo(
         'current port(${_backgroundPort!.hashCode}) receive, message:$message',
@@ -456,7 +523,7 @@ class ZegoCallInvitationServicePrivateImpl
 
   void _unregisterOfflineCallIsolateNameServer() {
     ZegoLoggerService.logInfo(
-      'unregister offline call  isolate name server, port:${_backgroundPort?.hashCode}',
+      'unregister offline call isolate name server, port:${_backgroundPort?.hashCode}',
       tag: 'call-invitation',
       subTag: 'service private(${identityHashCode(this)}), isolate',
     );
@@ -503,7 +570,7 @@ class ZegoCallInvitationServicePrivateImpl
   Future<void> clearInvitation() async {
     ZegoUIKitPrebuiltCallInvitationService()
         .private
-        .invitingUsersNotifier
+        .localInvitingUsersNotifier
         .value = [];
 
     final invitationData =
@@ -687,6 +754,12 @@ class ZegoCallInvitationServicePrivateImpl
           await ZegoUIKit().getSignalingPlugin().endAdvanceInvitation(
                 invitationID: invitationData.invitationID,
                 data: '',
+                zegoNotificationConfig: pushConfig,
+              );
+        } else {
+          await ZegoUIKit().getSignalingPlugin().quitAdvanceInvitation(
+                data: '',
+                invitationID: invitationData.invitationID,
                 zegoNotificationConfig: pushConfig,
               );
         }

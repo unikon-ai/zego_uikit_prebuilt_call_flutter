@@ -72,7 +72,7 @@ class ZegoCallInvitationServiceAPIImpl
             );
     }
 
-    final currentCallID = callID?.replaceAll(RegExp(r'[^a-zA-Z0-9]'), '') ??
+    final currentCallID = callID ??
         'call_${ZegoUIKit().getLocalUser().id}_${DateTime.now().millisecondsSinceEpoch}';
     if ((callID?.isNotEmpty ?? false) && currentCallID != callID) {
       ZegoLoggerService.logWarn(
@@ -217,6 +217,42 @@ class ZegoCallInvitationServiceAPIImpl
 
     return private._acceptInvitation(
       callerID: private._pageManager?.invitationData.inviter?.id ?? '',
+      customData: customData,
+    );
+  }
+
+  Future<bool> join({
+    required String invitationID,
+    String? customData = '',
+  }) async {
+    ZegoLoggerService.logInfo(
+      'send call invitation',
+      tag: 'call-invitation',
+      subTag: 'service, join',
+    );
+
+    if (!private._checkParamValid()) {
+      ZegoLoggerService.logInfo(
+        'parameter is not valid',
+        tag: 'call-invitation',
+        subTag: 'service, join',
+      );
+
+      return false;
+    }
+
+    if (!private._checkSignalingPlugin()) {
+      ZegoLoggerService.logInfo(
+        'signaling plugin is null',
+        tag: 'call-invitation',
+        subTag: 'service, join',
+      );
+
+      return false;
+    }
+
+    return private._joinInvitation(
+      invitationID: invitationID,
       customData: customData,
     );
   }

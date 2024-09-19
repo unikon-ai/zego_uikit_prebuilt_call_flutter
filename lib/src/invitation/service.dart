@@ -33,6 +33,7 @@ import 'package:zego_uikit_prebuilt_call/src/invitation/events.dart';
 import 'package:zego_uikit_prebuilt_call/src/invitation/inner_text.dart';
 import 'package:zego_uikit_prebuilt_call/src/invitation/internal/defines.dart';
 import 'package:zego_uikit_prebuilt_call/src/invitation/internal/internal_instance.dart';
+import 'package:zego_uikit_prebuilt_call/src/invitation/internal/isolate_name_server_guard.dart';
 import 'package:zego_uikit_prebuilt_call/src/invitation/internal/notification.dart';
 import 'package:zego_uikit_prebuilt_call/src/invitation/internal/protocols.dart';
 import 'package:zego_uikit_prebuilt_call/src/invitation/internal/shared_pref_defines.dart';
@@ -173,10 +174,11 @@ class ZegoUIKitPrebuiltCallInvitationService
   /// If you want to listen for events and perform custom logics, you can use [invitationEvents] to obtain related invitation events, and for call-related events, you need to use [events].
   Future<void> init({
     required int appID,
-    required String appSign,
     required String userID,
     required String userName,
     required List<IZegoUIKitPlugin> plugins,
+    String appSign = '',
+    String token = '',
 
     /// call abouts.
     ZegoCallPrebuiltConfigQuery? requireConfig,
@@ -202,7 +204,7 @@ class ZegoUIKitPrebuiltCallInvitationService
 
     await ZegoUIKit().getZegoUIKitVersion().then((uikitVersion) {
       ZegoLoggerService.logInfo(
-        'versions: zego_uikit_prebuilt_call:4.12.9; $uikitVersion',
+        'versions: zego_uikit_prebuilt_call:4.15.8; $uikitVersion',
         tag: 'call-invitation',
         subTag: 'service(${identityHashCode(this)}), init',
       );
@@ -224,9 +226,11 @@ class ZegoUIKitPrebuiltCallInvitationService
       subTag: 'service(${identityHashCode(this)}), init',
     );
 
-    await private._initPrivate(
+    await private
+        ._initPrivate(
       appID: appID,
       appSign: appSign,
+      token: token,
       userID: userID,
       userName: userName,
       plugins: plugins,
@@ -238,26 +242,115 @@ class ZegoUIKitPrebuiltCallInvitationService
       innerText: innerText,
       events: events,
       invitationEvents: invitationEvents,
-    );
+      invitationImpl: _invitation,
+    )
+        .then((_) {
+      ZegoLoggerService.logInfo(
+        'initPrivate done',
+        tag: 'call-invitation',
+        subTag: 'service(${identityHashCode(this)}), init',
+      );
+    });
     _invitation._private.init(
       innerText: innerText,
       events: events,
     );
 
-    await private.callkit._initCallKit(
+    await private.callkit
+        ._initCallKit(
       pageManager: private._pageManager!,
       androidNotificationConfig:
           private._data!.notificationConfig.androidNotificationConfig,
-    );
+    )
+        .then((_) {
+      ZegoLoggerService.logInfo(
+        'initCallKit done',
+        tag: 'call-invitation',
+        subTag: 'service(${identityHashCode(this)}), init',
+      );
+    });
 
-    await private._initPlugins(
+    await private
+        ._initPlugins(
       appID: appID,
       appSign: appSign,
+      token: token,
       userID: userID,
       userName: userName,
-    );
+    )
+        .then((_) {
+      ZegoLoggerService.logInfo(
+        'initPlugins done',
+        tag: 'call-invitation',
+        subTag: 'service(${identityHashCode(this)}), init',
+      );
+    });
 
-    await private._initPermissions().then((value) => private._initContext());
+    await private
+        ._initPermissions()
+        .then((value) => private._initContext())
+        .then((_) {
+      ZegoLoggerService.logInfo(
+        'initPermissions done',
+        tag: 'call-invitation',
+        subTag: 'service(${identityHashCode(this)}), init',
+      );
+    });
+
+    await getOfflineMissedCallNotificationID().then((notificationID) async {
+      if (null == notificationID) {
+        return;
+      }
+
+      await clearOfflineMissedCallNotificationID();
+      final missedCallInvitationData =
+          await getOfflineMissedCallNotification(notificationID);
+      await clearOfflineMissedCallNotification(notificationID);
+
+      ZegoLoggerService.logInfo(
+        'exist missed call notification clicked id,'
+        'notification id:$notificationID,'
+        'invitation data:$missedCallInvitationData',
+        tag: 'call-invitation',
+        subTag: 'service(${identityHashCode(this)}), missed call',
+      );
+
+      if (missedCallInvitationData.isEmpty) {
+        ZegoLoggerService.logInfo(
+          'invitation data is empty',
+          tag: 'call-invitation',
+          subTag: 'service(${identityHashCode(this)}), missed call',
+        );
+
+        return;
+      }
+
+      defaultAction() async {
+        await private._pageManager
+            ?.onMissedCallNotificationClicked(missedCallInvitationData);
+      }
+
+      if (null !=
+          private._pageManager?.callInvitationData.invitationEvents
+              ?.onIncomingMissedCallClicked) {
+        await private._pageManager?.callInvitationData.invitationEvents
+            ?.onIncomingMissedCallClicked
+            ?.call(
+          missedCallInvitationData.callID,
+          ZegoCallUser.fromUIKit(
+            missedCallInvitationData.inviter ?? ZegoUIKitUser.empty(),
+          ),
+          missedCallInvitationData.type,
+          missedCallInvitationData.invitees
+              .map((invitee) => ZegoCallUser.fromUIKit(invitee))
+              .toList(),
+          missedCallInvitationData.customData,
+          defaultAction,
+        );
+      } else {
+        await defaultAction.call();
+      }
+    });
   }
 
   ///   you must call this method as soon as the user logout from your app

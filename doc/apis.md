@@ -12,6 +12,7 @@
 - [ZegoUIKitPrebuiltCallController](#zegouikitprebuiltcallcontrollerzego_uikit_prebuilt_callzegouikitprebuiltcallcontroller-classhtml)
   - [hangUp](#hangup)
   - [minimize](#minimize)
+    - [isMinimizing](#isminimizingnotifiervaluenotifierbool)
     - [isMinimizing](#isminimizing)
     - [state](#state)
     - [restore](#restore)
@@ -149,7 +150,8 @@
 > ```dart
 > Future<void> init({
 >    required int appID,
->    required String appSign,
+>    String appSign = '',
+>    String token = '',
 >    required String userID,
 >    required String userName,
 >    required List<IZegoUIKitPlugin> plugins,
@@ -334,6 +336,22 @@
 > ```
 
 ## minimize
+
+### isMinimizingNotifier(ValueNotifier<bool>)
+
+> is it currently in the minimized state or not
+>
+> - example:
+>
+> ```dart
+> ValueListenableBuilder<bool>(
+>   valueListenable:
+>   ZegoUIKitPrebuiltCallController().minimize.isMinimizingNotifier,
+>   builder: (context, isMinimized, _) {
+>     ...
+>   },
+> )
+> ```
 
 ### isMinimizing(bool)
 
