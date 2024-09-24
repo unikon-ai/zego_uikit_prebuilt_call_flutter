@@ -166,23 +166,6 @@ class ZegoCallInvitationNotificationManager {
     await cancelInvitationNotification();
   }
 
-  Future<void> requestSystemAlertWindowPermission() async {
-    /// for bring app to foreground from background in Android 10
-    await requestPermission(Permission.systemAlertWindow).then((value) {
-      ZegoLoggerService.logInfo(
-        'request system alert window permission result:$value',
-        tag: 'call-invitation',
-        subTag: 'notification manager',
-      );
-    }).then((_) {
-      ZegoLoggerService.logInfo(
-        'requestPermission of systemAlertWindow done',
-        tag: 'call-invitation',
-        subTag: 'notification manager',
-      );
-    });
-  }
-
   Future<void> cancelInvitationNotification() async {
     ZegoLoggerService.logInfo(
       'cancelCallNotification',
