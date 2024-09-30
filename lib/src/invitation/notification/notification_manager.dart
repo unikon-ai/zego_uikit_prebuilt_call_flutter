@@ -71,15 +71,6 @@ class ZegoCallInvitationNotificationManager {
       );
     });
 
-    /// for bring app to foreground from background in Android 10
-    await requestPermission(Permission.systemAlertWindow).then((value) {
-      ZegoLoggerService.logInfo(
-        'request system alert window permission result:$value',
-        tag: 'call-invitation',
-        subTag: 'notification manager',
-      );
-    });
-
     await ZegoCallPluginPlatform.instance.createNotificationChannel(
       ZegoSignalingPluginLocalNotificationChannelConfig(
         channelID: callChannelKey,
