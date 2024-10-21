@@ -16,6 +16,7 @@ import 'package:zego_uikit_prebuilt_call/src/invitation/pages/page_manager.dart'
 
 /// @nodoc
 class ZegoCallingPage extends StatefulWidget {
+  final String sessionId;
   final ZegoCallInvitationPageManager pageManager;
   final ZegoUIKitPrebuiltCallInvitationData callInvitationData;
 
@@ -27,6 +28,7 @@ class ZegoCallingPage extends StatefulWidget {
 
   const ZegoCallingPage({
     Key? key,
+    required this.sessionId,
     required this.pageManager,
     required this.callInvitationData,
     required this.inviter,
@@ -205,6 +207,7 @@ class _ZegoCallingPageState extends State<ZegoCallingPage> {
     }
 
     final prebuiltCall = ZegoUIKitPrebuiltCall(
+      sessionId: widget.sessionId,
       appID: widget.callInvitationData.appID,
       appSign: widget.callInvitationData.appSign,
       callID: widget.pageManager.invitationData.callID,

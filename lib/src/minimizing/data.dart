@@ -17,6 +17,7 @@ import 'package:zego_uikit_prebuilt_call/src/events.dart';
 /// @nodoc
 class ZegoCallMinimizeData {
   const ZegoCallMinimizeData({
+    required this.sessionId,
     required this.appID,
     required this.appSign,
     required this.callID,
@@ -29,6 +30,8 @@ class ZegoCallMinimizeData {
     this.durationStartTime,
     this.onDispose,
   });
+
+  final String sessionId;
 
   /// you need to fill in the appID you obtained from console.zegocloud.com
   final int appID;

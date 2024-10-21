@@ -119,6 +119,7 @@ class ZegoCallInvitationPageManager {
       inCallingByIOSBackgroundLock;
 
   Future<void> init({
+    required String sessionId,
     required ZegoCallRingtoneConfig ringtoneConfig,
     required ZegoCallInvitationNotificationManager notificationManager,
   }) async {
@@ -136,6 +137,7 @@ class ZegoCallInvitationPageManager {
     _notificationManager = notificationManager;
 
     callingMachine = ZegoCallingMachine(
+      sessionId: sessionId,
       pageManager: this,
       callInvitationData: callInvitationData,
     );

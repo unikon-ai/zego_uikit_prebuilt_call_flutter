@@ -2,6 +2,7 @@
 import 'package:flutter/cupertino.dart';
 
 typedef ZegoCallEndCallback = void Function(
+    String sessionId,
   ZegoCallEndEvent event,
 
   /// defaultAction to return to the previous page

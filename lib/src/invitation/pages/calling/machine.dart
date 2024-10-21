@@ -31,8 +31,10 @@ typedef CallingMachineStateChanged = void Function(CallingState);
 class ZegoCallingMachine {
   final ZegoCallInvitationPageManager pageManager;
   final ZegoUIKitPrebuiltCallInvitationData callInvitationData;
+  final String sessionId;
 
   ZegoCallingMachine({
+    required this.sessionId,
     required this.pageManager,
     required this.callInvitationData,
   });
@@ -113,6 +115,7 @@ class ZegoCallingMachine {
       Navigator.of(currentContext!).push(
         MaterialPageRoute(
           builder: (context) => ZegoCallingPage(
+            sessionId: sessionId,
             pageManager: pageManager,
             callInvitationData: callInvitationData,
             inviter: pageManager.invitationData.inviter!,

@@ -26,6 +26,7 @@ import 'package:zego_uikit_prebuilt_call/src/minimizing/overlay_machine.dart';
 
 /// @nodoc
 class ZegoCallBottomMenuBar extends StatefulWidget {
+  final String sessionId;
   final ZegoUIKitPrebuiltCallConfig config;
   final ZegoUIKitPrebuiltCallEvents events;
   final void Function(ZegoCallEndEvent event) defaultEndAction;
@@ -59,6 +60,7 @@ class ZegoCallBottomMenuBar extends StatefulWidget {
     required this.isHangUpRequestingNotifier,
     required this.chatViewVisibleNotifier,
     required this.popUpManager,
+    required this.sessionId,
     this.autoHideSeconds = 3,
     this.buttonSize = const Size(60, 60),
     this.height,
@@ -347,7 +349,7 @@ class _ZegoCallBottomMenuBarState extends State<ZegoCallBottomMenuBar> {
             }
 
             if (widget.events.onCallEnd != null) {
-              widget.events.onCallEnd!.call(callEndEvent, defaultAction);
+              widget.events.onCallEnd!.call(widget.sessionId, callEndEvent, defaultAction);
             } else {
               defaultAction.call();
             }

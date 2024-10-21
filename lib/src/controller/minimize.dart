@@ -51,6 +51,7 @@ class ZegoCallControllerMinimizingImpl with ZegoCallControllerMinimizePrivate {
       Navigator.of(context, rootNavigator: rootNavigator).push(
         MaterialPageRoute(builder: (context) {
           final prebuiltCall = ZegoUIKitPrebuiltCall(
+            sessionId: minimizeData.sessionId,
             appID: minimizeData.appID,
             appSign: minimizeData.appSign,
             userID: minimizeData.userID,

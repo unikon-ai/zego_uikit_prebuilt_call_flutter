@@ -27,6 +27,7 @@ import 'package:zego_uikit_prebuilt_call/src/minimizing/overlay_machine.dart';
 
 /// @nodoc
 class ZegoCallTopMenuBar extends StatefulWidget {
+  final String sessionId;
   final ZegoUIKitPrebuiltCallConfig config;
   final ZegoUIKitPrebuiltCallEvents events;
   final void Function(ZegoCallEndEvent event) defaultEndAction;
@@ -49,6 +50,7 @@ class ZegoCallTopMenuBar extends StatefulWidget {
 
   const ZegoCallTopMenuBar({
     Key? key,
+    required this.sessionId,
     required this.config,
     required this.events,
     required this.defaultEndAction,
@@ -346,7 +348,7 @@ class _ZegoCallTopMenuBarState extends State<ZegoCallTopMenuBar> {
             }
 
             if (widget.events.onCallEnd != null) {
-              widget.events.onCallEnd!.call(callEndEvent, defaultAction);
+              widget.events.onCallEnd!.call(widget.sessionId, callEndEvent, defaultAction);
             } else {
               defaultAction.call();
             }

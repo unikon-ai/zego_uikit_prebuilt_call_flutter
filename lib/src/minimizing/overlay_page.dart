@@ -84,6 +84,7 @@ import 'package:zego_uikit_prebuilt_call/src/minimizing/overlay_machine.dart';
 class ZegoUIKitPrebuiltCallMiniOverlayPage extends StatefulWidget {
   const ZegoUIKitPrebuiltCallMiniOverlayPage({
     Key? key,
+    required this.sessionId,
     required this.contextQuery,
     this.rootNavigator = true,
     this.navigatorWithSafeArea = true,
@@ -104,6 +105,7 @@ class ZegoUIKitPrebuiltCallMiniOverlayPage extends StatefulWidget {
     this.avatarBuilder,
   }) : super(key: key);
 
+  final String sessionId;
   final Size? size;
   final double padding;
   final double borderRadius;
@@ -313,6 +315,7 @@ class ZegoUIKitPrebuiltCallMiniOverlayPageState
       onPressed: () async {
         await ZegoUIKitPrebuiltCallController.instance.hangUp(
           context,
+          widget.sessionId,
           showConfirmation: false,
         );
       },
@@ -597,7 +600,7 @@ class ZegoUIKitPrebuiltCallMiniOverlayPageState
     }
 
     if (minimizeData?.events.onCallEnd != null) {
-      minimizeData?.events.onCallEnd?.call(callEndEvent, defaultAction);
+      minimizeData?.events.onCallEnd?.call(widget.sessionId, callEndEvent, defaultAction);
     } else {
       defaultAction.call();
     }

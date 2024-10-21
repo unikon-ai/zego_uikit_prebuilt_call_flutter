@@ -54,6 +54,7 @@ class ZegoCallInvitationServicePrivateImpl
       _data?.notificationConfig.androidNotificationConfig;
 
   Future<void> _initPrivate({
+    required String sessionId,
     required int appID,
     required String appSign,
     required String userID,
@@ -119,6 +120,7 @@ class ZegoCallInvitationServicePrivateImpl
       callInvitationData: _data!,
     );
     _pageManager!.init(
+      sessionId: sessionId,
       ringtoneConfig: _data!.ringtoneConfig,
       notificationManager: _notificationManager!,
     );

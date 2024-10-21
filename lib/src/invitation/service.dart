@@ -172,6 +172,7 @@ class ZegoUIKitPrebuiltCallInvitationService
   /// You can also customize the invitation interface with [uiConfig]. If you want to modify the related text on the interface, you can set [innerText].
   /// If you want to listen for events and perform custom logics, you can use [invitationEvents] to obtain related invitation events, and for call-related events, you need to use [events].
   Future<void> init({
+    required String sessionId,
     required int appID,
     required String appSign,
     required String userID,
@@ -225,6 +226,7 @@ class ZegoUIKitPrebuiltCallInvitationService
     );
 
     await private._initPrivate(
+      sessionId: sessionId,
       appID: appID,
       appSign: appSign,
       userID: userID,

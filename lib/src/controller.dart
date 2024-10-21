@@ -75,7 +75,8 @@ class ZegoUIKitPrebuiltCallController
   /// [ZegoUIKitPrebuiltCallEvents.onHangUpConfirmation]
   /// [ZegoUIKitPrebuiltCallEvents.onCallEnd]
   Future<bool> hangUp(
-    BuildContext context, {
+    BuildContext context,
+    String sessionId, {
     bool showConfirmation = false,
     ZegoCallEndReason reason = ZegoCallEndReason.localHangUp,
   }) async {
@@ -193,7 +194,7 @@ class ZegoUIKitPrebuiltCallController
     }
 
     if (private.events?.onCallEnd != null) {
-      private.events?.onCallEnd?.call(endEvent, defaultAction);
+      private.events?.onCallEnd?.call(sessionId, endEvent, defaultAction);
     } else {
       defaultAction.call();
     }

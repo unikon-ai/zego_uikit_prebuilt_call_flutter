@@ -50,9 +50,12 @@ class ZegoUIKitPrebuiltCall extends StatefulWidget {
     required this.userName,
     required this.config,
     this.events,
+    required this.sessionId,
     this.onDispose,
     this.plugins,
   }) : super(key: key);
+
+  final String sessionId;
 
   /// You can create a project and obtain an appID from the [ZEGOCLOUD Admin Console](https://console.zegocloud.com).
   final int appID;
@@ -161,6 +164,7 @@ class _ZegoUIKitPrebuiltCallState extends State<ZegoUIKitPrebuiltCall>
     onInvitingUsersUpdated();
 
     minimizeData = ZegoCallMinimizeData(
+      sessionId: widget.sessionId,
       appID: widget.appID,
       appSign: widget.appSign,
       callID: widget.callID,
@@ -579,7 +583,7 @@ class _ZegoUIKitPrebuiltCallState extends State<ZegoUIKitPrebuiltCall>
         }
 
         if (events.onCallEnd != null) {
-          events.onCallEnd?.call(callEndEvent, defaultAction);
+          events.onCallEnd?.call(widget.sessionId, callEndEvent, defaultAction);
         } else {
           defaultAction.call();
         }
@@ -610,7 +614,7 @@ class _ZegoUIKitPrebuiltCallState extends State<ZegoUIKitPrebuiltCall>
     }
 
     if (events.onCallEnd != null) {
-      events.onCallEnd?.call(callEndEvent, defaultAction);
+      events.onCallEnd?.call(widget.sessionId, callEndEvent, defaultAction);
     } else {
       defaultAction.call();
     }
@@ -778,6 +782,7 @@ class _ZegoUIKitPrebuiltCallState extends State<ZegoUIKitPrebuiltCall>
       right: 0,
       top: safeAreaInsets.top,
       child: ZegoCallTopMenuBar(
+        sessionId: widget.sessionId,
         height: widget.config.topMenuBar.height ?? 80.zR,
         config: widget.config,
         events: events,
@@ -807,6 +812,7 @@ class _ZegoUIKitPrebuiltCallState extends State<ZegoUIKitPrebuiltCall>
       bottom:
           isLightStyle ? safeAreaInsets.bottom + 10.zR : safeAreaInsets.bottom,
       child: ZegoCallBottomMenuBar(
+        sessionId: widget.sessionId,
         buttonSize: Size(96.zR, 96.zR),
         config: widget.config,
         events: events,
@@ -979,7 +985,7 @@ class _ZegoUIKitPrebuiltCallState extends State<ZegoUIKitPrebuiltCall>
     }
 
     if (null != events.onCallEnd) {
-      events.onCallEnd!.call(callEndEvent, defaultAction);
+      events.onCallEnd!.call(widget.sessionId, callEndEvent, defaultAction);
     } else {
       defaultAction.call();
     }
@@ -1127,6 +1133,7 @@ class _ZegoUIKitPrebuiltCallState extends State<ZegoUIKitPrebuiltCall>
 
       ZegoUIKitPrebuiltCallController().hangUp(
         context,
+        widget.sessionId,
         showConfirmation: false,
         reason: ZegoCallEndReason.abandoned,
       );
