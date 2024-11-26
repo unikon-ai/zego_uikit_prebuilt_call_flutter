@@ -10,8 +10,8 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
 // Package imports:
-import 'package:flutter_callkit_incoming_yoer/entities/call_event.dart';
-import 'package:flutter_callkit_incoming_yoer/flutter_callkit_incoming.dart';
+import 'package:flutter_callkit_incoming/entities/call_event.dart';
+import 'package:flutter_callkit_incoming/flutter_callkit_incoming.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:zego_uikit/zego_uikit.dart';
